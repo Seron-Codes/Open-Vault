@@ -51,7 +51,7 @@
 
   color: #0f0f0f;
   /* background-color: #f6f6f6; */
-
+background-color: transparent;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -66,6 +66,7 @@
   flex-direction: column;
   justify-content: center;
   text-align: center;
+  background-color: transparent;
 }
 
 .logo {
@@ -136,7 +137,8 @@ button {
 @media (prefers-color-scheme: dark) {
   :root {
     color: #f6f6f6;
-    background-color: #2f2f2f;
+    /* background-color: #2f2f2f; */
+    background-color: transparent;
   }
 
   a:hover {
