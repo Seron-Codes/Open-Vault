@@ -15,9 +15,9 @@ pub fn run() {
             let window = app.get_webview_window("main").unwrap();
             #[cfg(target_os = "windows")]
             {
-                // apply_mica(&window, None);
-                apply_acrylic(&window, Some((18, 18, 18, 125)))
-                    .expect("Unsupported platform! 'apply_acrylic' is failed.");
+                apply_mica(&window, None);
+                // apply_acrylic(&window, Some((18, 18, 18, 125)))
+                //     .expect("Unsupported platform! 'apply_acrylic' is failed.");
                 // todo!("Add option for mica on unsupported platform");
             }
             Ok(())
