@@ -4,14 +4,6 @@
   import { X, Settings, ChevronDown, Home } from 'lucide-svelte';
   
   // Tauri window handling
-  let appWindow: any;
-
-  import('@tauri-apps/api/window').then((module) => {
-    appWindow = module.appWindow;
-  }).catch(() => {
-    console.log("Tauri API not found (Browser Mode)");
-  });
-
   let isDropdownOpen = false;
 
   function toggleDropdown() {
@@ -127,7 +119,7 @@
   .project-menu {
     position: relative;
     /* Important: prevent this container from blocking drags in empty areas if any */
-    -webkit-app-region: no-drag;
+    /* -webkit-app-region: no-drag; */
     margin-right: 8px;
   }
 
@@ -148,7 +140,7 @@
   /* BIGGER TEXT STYLE */
   .project-name {
     font-size: 16px; /* Increased from 13px */
-    font-weight: 600; /* Made bolder */
+    font-weight: 400; /* Made bolder */
     letter-spacing: 0.3px;
   }
 
