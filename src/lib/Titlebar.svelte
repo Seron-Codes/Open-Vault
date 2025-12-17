@@ -25,7 +25,7 @@
   }
 
   async function closeApp() {
-    if (appWindow) await appWindow.close();
+    console.log("Close button clicked");
   }
 </script>
 
