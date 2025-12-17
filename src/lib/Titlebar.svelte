@@ -2,6 +2,7 @@
   import { slide } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
   import { X, Settings, ChevronDown, Home } from 'lucide-svelte';
+  import{getCurrentWindow}from'@tauri-apps/api/window';
   
   // Tauri window handling
   let isDropdownOpen = false;
@@ -26,6 +27,8 @@
 
   async function closeApp() {
     console.log("Close button clicked");
+    const window = getCurrentWindow();
+    await window.close();
   }
 </script>
 

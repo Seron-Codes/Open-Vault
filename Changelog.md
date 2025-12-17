@@ -8,3 +8,5 @@ Removed Decoration or frame around the window
 ### Version 0.1.3
 Major Overhaul visualy of the title bar
 **Issue**: Tauri Data Drag region still doesnt work as of this update
+### Version 0.1.4
+Fixed Dragging and Added Close Logic via Frontend
