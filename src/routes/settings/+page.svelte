@@ -10,7 +10,6 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
     background: transparent;
     color: white;
     font-family: sans-serif;
