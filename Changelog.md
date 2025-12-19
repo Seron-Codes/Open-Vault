@@ -16,3 +16,6 @@ Added Functioning Settings Window
 Fixed titlebar and added Decorations in window.
 ### Version 0.2.3
 Fixed Settings Background
+### Version 0.2.4
+Added Material Selector
+*UPDATE:* Reverted
