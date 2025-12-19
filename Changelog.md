@@ -19,6 +19,8 @@ Fixed Settings Background
 ### Version 0.2.4
 Added Material Selector
 *UPDATE:* Reverted
-## Version 0.3.0 
+##  ~~Version 0.3.0 ~~
 Added Accent Color and Accent color text
 *Reverted*
+### Version 0.2.5 
+Added Theme Selector

@@ -6,8 +6,8 @@
   const dispatch = createEventDispatcher();
 
   const options = [
-    { value: "mica", label: "Mica", desc: "Standard Windows blur" },
-    { value: "acrylic", label: "Acrylic", desc: "Glassy transparency" },
+    { value: "mica", label: "Mica", desc: "Standard Windows blur , works fine on most hardware. Reccomended" },
+    { value: "acrylic", label: "Acrylic", desc: "Glassy transparency , May Cause Performance issues on weak hardware." },
   ];
 
   function handleChange(newValue: string) {
