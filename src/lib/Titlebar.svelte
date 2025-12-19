@@ -134,7 +134,7 @@ async function openSettings() {
     z-index: 9999;
     user-select: none;
     font-family: var(--font-ui);
-    color: white;
+    color: AccentColorText;
   }
 
   /* DRAG FIX: 

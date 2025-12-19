@@ -1,5 +1,10 @@
 <div class="container">
+  <div class="p-8">
+  <h2 class="text-xl font-bold mb-4 text-white">Theme:</h2>
   
+  <ThemeSelector 
+  />
+</div>
 </div>
 
 <style>
@@ -16,6 +21,7 @@
 </style>
 <script>
   import { onMount } from 'svelte';
+  import ThemeSelector from '$lib/components/ThemeSelector.svelte';
   // Note: In Tauri v2, 'invoke' is in @tauri-apps/api/core
   import { invoke } from '@tauri-apps/api/core'; 
 
