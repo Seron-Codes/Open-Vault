@@ -12,11 +12,20 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "Open Vault",
         "minHeight": 600,
         "minWidth": 800,
         "decorations": false,
         "transparent": true
+      },
+      {
+        "label": "settings",
+        "url": "/settings",
+        "title": "Settings",
+        "width": 600,
+        "height": 400,
+        "resizable": false
       }
     ],
     "security": {

@@ -31,21 +31,33 @@
     const window = getCurrentWindow();
     await window.close();
   }
-  async function openSettings() {
-    console.log("Opening Settings Window");
-  const existingWin = await WebviewWindow.getByLabel('settings');
+async function openSettings() {
+  console.log('Opening Settings Window');
+
+  const existingWin = await WebviewWindow.getByLabel('settings'); // ✅ await
 
   if (existingWin) {
-    await existingWin.setFocus();
-  } else {
-    const webview = new WebviewWindow('settings', {
-      url: '/settings',
-      title: 'Settings',
-      width: 600,
-      height: 400,
-      resizable: false
-    });
+    await existingWin.setFocus(); // ✅ now existingWin is WebviewWindow, not a Promise
+    return;
   }
+
+  const webview = new WebviewWindow('settings', {
+    url: '/settings',
+    title: 'Settings',
+    width: 400,
+    height: 600,
+    resizable: false,
+    decorations:false,
+    transparent:true
+  });
+
+  webview.once('tauri://created', () => {
+    console.log('Settings window created');
+  });
+
+  webview.once('tauri://error', (e) => {
+    console.error('Settings window error', e);
+  });
 }
 </script>
 
