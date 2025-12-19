@@ -47,7 +47,7 @@ async function openSettings() {
     width: 400,
     height: 600,
     resizable: false,
-    decorations:false,
+    decorations:true,
     transparent:true
   });
 
