@@ -1,24 +1,20 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
+  import { goto } from '$app/navigation';
 
-  let name = $state("");
-  let greetMsg = $state("");
-  let bool = invoke<boolean>("check_first_run").then((res) => {
-    console.log("Is first run:", res);
-    return res;
-  });
+async function init() {
+    const isFirstRun = await invoke("check_first_run");
 
-  async function greet(event: Event) {
-    event.preventDefault();
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    greetMsg = await invoke("greet", { name });
-  }
+    if (isFirstRun) {
+        goto('/setup');
+    }
+}
+  init();
 </script>
 
 <main class="container">
   <h1>Update the Frontend</h1>
   <p>Please Update this part or replace this with the Frontend</p>
-  <p>{greetMsg}</p>
 </main>
 
 <style>
