@@ -8,15 +8,380 @@
     return res;
   });
 
-  async function greet(event: Event) {
-    event.preventDefault();
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    greetMsg = await invoke("greet", { name });
+  // passwords.js - Simple CSV Import & Display
+
+document.addEventListener('DOMContentLoaded', () => {
+  // --- DOM Elements ---
+  const modalOverlay = document.getElementById('modalOverlay');
+  const importModal = document.getElementById('importCsvModal');
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('csvFileInput');
+  const fileNameDisplay = document.getElementById('csvFileNameDisplay');
+  const previewTable = document.getElementById('csvPreviewTableContainer');
+  const containerArea = document.getElementById('passwordContainersArea');
+  const emptyState = document.getElementById('emptyState');
+  const btnClose = document.querySelectorAll('.close-modal-btn');
+  const btnImportConfirm = document.getElementById('importCsvConfirmBtn');
+  const importTitleInput = document.getElementById('importContainerTitleInput');
+
+  let currentCSVData = null;
+
+  // --- Init ---
+  setupEventListeners();
+
+  function setupEventListeners() {
+    // Open import modal
+    [document.getElementById('importCsvBtnGlobal'), document.getElementById('importCsvBtnEmpty')].forEach(btn => {
+      if(btn) btn.addEventListener('click', openModal);
+    });
+
+    // Close modal
+    btnClose.forEach(btn => btn.addEventListener('click', closeModal));
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) closeModal();
+    });
+
+    // Drag & Drop
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = '#5e63ff';
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.style.borderColor = '';
+    });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = '';
+      handleFile(e.dataTransfer.files[0]);
+    });
+
+    // File input change
+    fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+    // Import button
+    if (btnImportConfirm) {
+      btnImportConfirm.addEventListener('click', importCSV);
+    }
   }
+
+  function handleFile(file) {
+    if (!file || !file.name.endsWith('.csv')) {
+      alert('Please upload a valid CSV file.');
+      return;
+    }
+
+    fileNameDisplay.textContent = `Selected: ${file.name}`;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target.result;
+      const { headers, rows } = parseCSV(text);
+
+      if (headers.length === 0) {
+        alert('Invalid CSV file.');
+        return;
+      }
+
+      currentCSVData = { headers, rows };
+      displayTable(headers, rows);
+      btnImportConfirm.style.display = 'inline-block';
+    };
+    reader.readAsText(file);
+  }
+
+  function parseCSV(text) {
+    const lines = text.trim().split('\n');
+    if (lines.length < 1) return { headers: [], rows: [] };
+
+    const headers = lines[0].split(',').map(h => h.trim());
+    const rows = lines.slice(1).map(line => {
+      const values = line.split(',').map(v => v.trim());
+      return values;
+    });
+
+    return { headers, rows };
+  }
+
+  function displayTable(headers, rows) {
+    let html = '<table class="csv-display-table"><thead><tr>';
+    
+    headers.forEach(h => {
+      html += `<th>${escapeHtml(h)}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+
+    rows.forEach(row => {
+      html += '<tr>';
+      row.forEach(cell => {
+        html += `<td>${escapeHtml(cell)}</td>`;
+      });
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    previewTable.innerHTML = html;
+  }
+
+  function displayImportedData(container) {
+    // Create container element with the imported CSV data
+    const containerEl = document.createElement('div');
+    containerEl.className = 'password-group';
+    
+    let tableHTML = '<table class="pass-table"><thead><tr>';
+    container.headers.forEach(h => {
+      tableHTML += `<th>${escapeHtml(h)}</th>`;
+    });
+    tableHTML += '</tr></thead><tbody>';
+
+    container.data.forEach(row => {
+      tableHTML += '<tr>';
+      row.forEach(cell => {
+        tableHTML += `<td>${escapeHtml(cell)}</td>`;
+      });
+      tableHTML += '</tr>';
+    });
+    tableHTML += '</tbody></table>';
+
+    containerEl.innerHTML = `
+      <div class="group-header">
+        <h2>${escapeHtml(container.title)}</h2>
+        <button class="btn btn-sm btn-danger delete-group-btn" data-id="${container.id}">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      </div>
+      <div class="table-responsive">
+        ${tableHTML}
+      </div>
+    `;
+
+    emptyState.style.display = 'none';
+    containerArea.appendChild(containerEl);
+
+    // Attach delete handler
+    containerEl.querySelector('.delete-group-btn').addEventListener('click', (e) => {
+      if (confirm('Delete this password collection?')) {
+        const id = e.currentTarget.dataset.id;
+        const containers = JSON.parse(localStorage.getItem('passwordContainers') || '[]');
+        const filtered = containers.filter(c => c.id != id);
+        localStorage.setItem('passwordContainers', JSON.stringify(filtered));
+        containerEl.remove();
+        
+        if (filtered.length === 0) {
+          emptyState.style.display = 'block';
+        }
+      }
+    });
+  }
+
+  function importCSV() {
+    if (!currentCSVData || currentCSVData.rows.length === 0) {
+      alert('No CSV data to import.');
+      return;
+    }
+
+    const title = importTitleInput.value.trim() || 'Imported ' + new Date().toLocaleDateString();
+    
+    // Store in localStorage
+    const containers = JSON.parse(localStorage.getItem('passwordContainers') || '[]');
+    const newContainer = {
+      id: Date.now(),
+      title: title,
+      headers: currentCSVData.headers,
+      data: currentCSVData.rows,
+      importDate: new Date().toISOString()
+    };
+
+    containers.push(newContainer);
+    localStorage.setItem('passwordContainers', JSON.stringify(containers));
+
+    closeModal();
+    resetModal();
+    displayImportedData(newContainer);
+  }
+
+  function openModal() {
+    modalOverlay.style.display = 'block';
+    importModal.style.display = 'flex';
+  }
+
+  function closeModal() {
+    modalOverlay.style.display = 'none';
+    importModal.style.display = 'none';
+  }
+
+  function resetModal() {
+    fileInput.value = '';
+    fileNameDisplay.textContent = '';
+    importTitleInput.value = '';
+    previewTable.innerHTML = '';
+    btnImportConfirm.style.display = 'none';
+    currentCSVData = null;
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return String(text).replace(/[&<>"']/g, (m) => map[m]);
+  }
+});
 </script>
 
 <main class="container">
+<html lang="en">
 
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Passwords Management</title>
+  <!-- Main Global Style -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Page Specific Style -->
+  <link rel="stylesheet" href="src/styles/passwords.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Global App Script (Sidebar, etc) -->
+  <!-- <script type="text/javascript" src="app.js" defer></script> -->
+  <!-- Page Specific Script -->
+  <script type="text/javascript" src="src/scripts/passwords.js" defer></script>
+</head>
+
+<body>
+  <!-- <nav id="sidebar"></nav> -->
+  
+  <main class="passwords-dashboard">
+    <!-- Top Header / Title Area -->
+    <header class="dashboard-header">
+      <div class="header-left">
+        <h1>Password Management</h1>
+        <p class="subtitle">Manage and audit your secure credentials</p>
+      </div>
+      <div class="header-right">
+        <!-- Global Action Buttons -->
+        <button id="importCsvBtnGlobal" class="btn btn-primary">
+          <i class="fas fa-file-import"></i> Import CSV
+        </button>
+      </div>
+    </header>
+
+    <!-- Stats / Summary Row -->
+    <section class="stats-overview">
+      <div class="stat-card">
+        <div class="stat-icon-wrapper total">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <div class="stat-details">
+          <span class="stat-value" id="totalPassCount">0</span>
+          <span class="stat-label">Total Passwords</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon-wrapper weak">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="stat-details">
+          <span class="stat-value" id="weakPassCount">0</span>
+          <span class="stat-label">Weak Passwords</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Controls Bar (Search & Filter) -->
+    <section class="controls-bar">
+      <div class="search-wrapper">
+        <i class="fas fa-search"></i>
+        <input type="search" id="globalSearch" placeholder="Search websites, usernames...">
+      </div>
+      <div class="filter-wrapper">
+        <button id="toggleFiltersBtn" class="btn btn-secondary icon-only" title="Toggle Filters">
+          <i class="fas fa-filter"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- Expanded Filters Section -->
+    <section id="filterExpansionSection" class="filter-panel" style="display: none;">
+      <div class="filter-grid">
+        <div class="input-group">
+          <label>Website</label>
+          <input type="text" id="filterWebsite" class="filter-input" placeholder="Contains...">
+        </div>
+        <div class="input-group">
+          <label>Username</label>
+          <input type="text" id="filterUsername" class="filter-input" placeholder="Contains...">
+        </div>
+        <div class="input-group">
+          <label>Category</label>
+          <select id="filterCategory" class="filter-input">
+            <option value="">All Categories</option>
+            <option value="Work">Work</option>
+            <option value="Personal">Personal</option>
+            <option value="Social">Social</option>
+            <option value="Finance">Finance</option>
+          </select>
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button id="clearFiltersBtn" class="btn btn-text">Reset</button>
+        <button id="applyFiltersBtn" class="btn btn-sm btn-primary">Apply</button>
+      </div>
+    </section>
+
+    <!-- Main Content: Password Tables -->
+    <div id="passwordContainersArea" class="content-area">
+      <!-- Empty State -->
+      <div id="emptyState" class="empty-state" style="display: none;">
+        <div class="empty-illustration">
+          <i class="fas fa-key"></i>
+        </div>
+        <h3>No Credentials Found</h3>
+        <p>Import a CSV file to get started auditing your security.</p>
+        <button id="importCsvBtnEmpty" class="btn btn-primary">Import CSV</button>
+      </div>
+      
+      <!-- Password tables will be injected here by JS -->
+    </div>
+  </main>
+
+  <!-- === MODALS === -->
+  <div id="modalOverlay" class="modal-overlay"></div>
+
+  <!-- Import CSV Modal -->
+  <div id="importCsvModal" class="modal">
+    <div class="modal-header">
+      <h2>Import Credentials</h2>
+      <button class="close-modal-btn" data-modal-id="importCsvModal">&times;</button>
+    </div>
+    
+    <div class="modal-body">
+      <!-- File Upload -->
+      <div class="import-step">
+        <div class="form-group">
+          <label>Collection Title</label>
+          <input type="text" id="importContainerTitleInput" class="modal-input" placeholder="e.g. Chrome Export, Work Passwords">
+        </div>
+        
+        <div class="file-upload-area" id="dropZone">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Click to browse or drag CSV here</p>
+          <input type="file" id="csvFileInput" accept=".csv" hidden>
+          <span id="csvFileNameDisplay" class="file-name"></span>
+        </div>
+      </div>
+
+      <!-- CSV Preview Table -->
+      <div id="csvPreviewTableContainer" class="table-responsive"></div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary close-modal-btn" data-modal-id="importCsvModal">Close</button>
+      <button id="importCsvConfirmBtn" class="btn btn-primary" style="display:none;">Import</button>
+    </div>
+  </div>
+
+</body>
+</html>
 </main>
 
 <style>
